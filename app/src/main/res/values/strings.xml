@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <string name="app_name">Top 4</string>
+    <string name="hello_world">Hello world!</string>
+    <string name="action_settings">Settings</string>
+    <string name="call_button1">Not Assigned</string>
+    <string name="call_button2">Not Assigned</string>
+    <string name="call_button3">Not Assigned</string>
+    <string name="call_button4">Not Assigned</string>
+
+
+</resources>

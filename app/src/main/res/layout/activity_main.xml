@@ -1,0 +1,53 @@
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:paddingLeft="@dimen/activity_horizontal_margin"
+    android:paddingRight="@dimen/activity_horizontal_margin"
+    android:paddingTop="@dimen/activity_vertical_margin"
+    android:paddingBottom="@dimen/activity_vertical_margin"
+    tools:context=".MainActivity">
+
+
+    <Button
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/call_button1"
+        android:id="@+id/callButton1"
+        android:layout_margin="@dimen/callButton_layout_margin"
+        android:padding="@dimen/callButton_padding"
+        android:layout_gravity="center_horizontal"
+        android:textSize="@dimen/callButton_text_size" />
+
+    <Button
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/call_button2"
+        android:id="@+id/callButton2"
+        android:layout_margin="@dimen/callButton_layout_margin"
+        android:padding="@dimen/callButton_padding"
+        android:layout_gravity="center_horizontal"
+        android:textSize="@dimen/callButton_text_size" />
+
+    <Button
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/call_button3"
+        android:id="@+id/callButton3"
+        android:layout_margin="@dimen/callButton_layout_margin"
+        android:padding="@dimen/callButton_padding"
+        android:layout_gravity="center_horizontal"
+        android:textSize="@dimen/callButton_text_size" />
+
+    <Button
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/call_button4"
+        android:id="@+id/callButton4"
+        android:layout_margin="@dimen/callButton_layout_margin"
+        android:padding="@dimen/callButton_padding"
+        android:layout_gravity="center_horizontal"
+        android:textSize="@dimen/callButton_text_size" />
+</LinearLayout>
+
