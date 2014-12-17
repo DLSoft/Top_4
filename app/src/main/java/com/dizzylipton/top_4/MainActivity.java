@@ -52,13 +52,9 @@ public class MainActivity extends ActionBarActivity {
                     for (int i = 0; i < 4; i++) {
                         if (v.getId() == btnR[i]) {
                             number = dbTools.getContactNumber(Integer.toString(i));
-                            /**
-                             * Here is were we make the phone call.
-                             * Commented out so I don't butt (test) dial anyone
-                             */
-                            //Intent callIntent = new Intent(Intent.ACTION_CALL);
-                            //callIntent.setData(Uri.parse("tel:" + number));
-                            //startActivity(callIntent);
+                            Intent callIntent = new Intent(Intent.ACTION_CALL);
+                            callIntent.setData(Uri.parse("tel:" + number));
+                            startActivity(callIntent);
                             break;
 
                         }
