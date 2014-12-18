@@ -1,5 +1,7 @@
 package com.dizzylipton.top_4;
 
+import android.app.AlertDialog;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.database.Cursor;
 import android.net.Uri;
@@ -34,12 +36,16 @@ public class MainActivity extends ActionBarActivity {
             R.id.callButton4,
     };
 
+
+
     DBTools dbTools = new DBTools(this);
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+        final AlertDialog.Builder fragDlg = new AlertDialog.Builder(this);
 
         ArrayList<HashMap<String, String>> top4List = dbTools.getAllContacts();
 
@@ -55,9 +61,23 @@ public class MainActivity extends ActionBarActivity {
                     for (int i = 0; i < 4; i++) {
                         if (v.getId() == btnR[i]) {
                             number = dbTools.getContactNumber(Integer.toString(i));
-                            Intent callIntent = new Intent(Intent.ACTION_CALL);
-                            callIntent.setData(Uri.parse("tel:" + number));
-                            startActivity(callIntent);
+                            if(Integer.parseInt(number) == 0) {
+                                fragDlg.setTitle("Invalid Phone Number");
+                                fragDlg.setMessage("Contact has an Invalid Phone Number");
+                                fragDlg.setCancelable(true);
+                                fragDlg.setNeutralButton("OK", new DialogInterface.OnClickListener() {
+                                            public void onClick(DialogInterface dialog, int id) {
+                                                dialog.cancel();
+                                    }
+                                });
+                                AlertDialog alertDlg = fragDlg.create();
+                                alertDlg.show();
+
+                            } else {
+                                Intent callIntent = new Intent(Intent.ACTION_CALL);
+                                callIntent.setData(Uri.parse("tel:" + number));
+                                startActivity(callIntent);
+                            }
                             break;
 
                         }
@@ -137,6 +157,10 @@ public class MainActivity extends ActionBarActivity {
         }
 
         try {
+            if(number.equals("") {
+                name = "Not Assigned";
+                number = "0";
+            }
             Button callButton = (Button) findViewById(btnR[callButtonId]);
             callButton.setText(name);
             HashMap<String, String> updateMap = new HashMap<>();

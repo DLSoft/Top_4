@@ -9,5 +9,6 @@
     <string name="call_button3">Not Assigned</string>
     <string name="call_button4">Not Assigned</string>
 
+    <string name="dialog_ok">OK</string>
 
 </resources>
