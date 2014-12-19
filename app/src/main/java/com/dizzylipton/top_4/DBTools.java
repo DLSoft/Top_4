@@ -28,7 +28,7 @@ public class DBTools extends SQLiteOpenHelper {
             initMap.put("btnId", Integer.toString(i));
             initMap.put("contactName", "Not Yet Assigned");
             initMap.put("contactNumber", "0");
-            insertInitTop4(initMap);
+            insertInitTop4(initMap, database);
         }
 
     }
@@ -66,10 +66,9 @@ public class DBTools extends SQLiteOpenHelper {
         }
         return top4ArrayList;
     }
-    public void insertInitTop4(HashMap<String, String> queryValues) {
+    public void insertInitTop4(HashMap<String, String> queryValues, SQLiteDatabase database) {
 
         // This method should only be called once to initialize the database
-        SQLiteDatabase database = this.getWritableDatabase();
 
         ContentValues values = new ContentValues();
         values.put("btnId", queryValues.get("btnId"));
@@ -77,7 +76,6 @@ public class DBTools extends SQLiteOpenHelper {
         values.put("contactNumber", queryValues.get("contactNumber"));
 
         database.insert("top4", null, values);
-        database.close();
     }
 
     public void dropDatabase(SQLiteDatabase database) {

@@ -1,9 +1,12 @@
 package com.dizzylipton.top_4;
 
 import android.app.AlertDialog;
+import android.content.ContentUris;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.database.Cursor;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.provider.ContactsContract.CommonDataKinds.Phone;
 import android.provider.ContactsContract;
@@ -12,6 +15,7 @@ import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
+
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -74,9 +78,9 @@ public class MainActivity extends ActionBarActivity {
                                 alertDlg.show();
 
                             } else {
-                                Intent callIntent = new Intent(Intent.ACTION_CALL);
-                                callIntent.setData(Uri.parse("tel:" + number));
-                                startActivity(callIntent);
+                                //Intent callIntent = new Intent(Intent.ACTION_CALL);
+                                //callIntent.setData(Uri.parse("tel:" + number));
+                                //startActivity(callIntent);
                             }
                             break;
 
@@ -118,6 +122,8 @@ public class MainActivity extends ActionBarActivity {
 
         String number = "";
         String name = "";
+        Bitmap avatar = null;
+        Integer avatarId = null;
 
 
         if (resultCode == RESULT_OK && requestCode == PICK_CONTACT) {
@@ -125,11 +131,12 @@ public class MainActivity extends ActionBarActivity {
             Cursor cursor = null;
 
             try {
-                Uri result = data.getData();
+                final Uri result = data.getData();
                 String id = result.getLastPathSegment();
 
                 String[] projections = {Phone._ID,
                         Phone.NUMBER,
+                        ContactsContract.Contacts.PHOTO_ID,
                         ContactsContract.Contacts.DISPLAY_NAME,
                 };
 
@@ -145,6 +152,7 @@ public class MainActivity extends ActionBarActivity {
                 if (cursor.moveToFirst()) {
                     number = cursor.getString(numberIdx);
                     name = cursor.getString(cursor.getColumnIndex(ContactsContract.Contacts.DISPLAY_NAME));
+                    avatarId = cursor.getInt(cursor.getColumnIndex(ContactsContract.Contacts.PHOTO_ID));
                 }
 
             } catch (Exception e) {
@@ -157,13 +165,14 @@ public class MainActivity extends ActionBarActivity {
         }
 
         try {
-            if(number.equals("") {
+            if(number.equals("")) {
                 name = "Not Assigned";
                 number = "0";
             }
             Button callButton = (Button) findViewById(btnR[callButtonId]);
             callButton.setText(name);
             HashMap<String, String> updateMap = new HashMap<>();
+            avatar = getAvatar(avatarId);
             updateMap.put("btnId", Integer.toString(callButtonId));
             updateMap.put("contactNumber", number);
             updateMap.put("contactName", name);
@@ -175,5 +184,29 @@ public class MainActivity extends ActionBarActivity {
         } catch (Exception e) {
             e.printStackTrace();
         }
+    }
+    private Bitmap getAvatar(int avatarId) {
+
+        String[] PHOTO_BITMAP_PROJECTION = new String[] {
+                ContactsContract.CommonDataKinds.Photo.PHOTO
+        };
+
+        Bitmap avatar = null;
+        Uri uri = ContentUris.withAppendedId(ContactsContract.Data.CONTENT_URI, avatarId);
+        Cursor cursor = getContentResolver().query(uri, PHOTO_BITMAP_PROJECTION, null, null, null);
+
+        try {
+
+            if(cursor.moveToFirst()) {
+                byte[] avatarBytes = cursor.getBlob(0);
+                if(avatarBytes != null) {
+                    avatar = BitmapFactory.decodeByteArray(avatarBytes, 0, avatarBytes.length);
+                }
+            }
+        }
+        finally {
+            cursor.close();
+        }
+        return avatar;
     }
 }
