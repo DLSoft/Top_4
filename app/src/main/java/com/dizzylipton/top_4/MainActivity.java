@@ -17,6 +17,7 @@ import android.view.View;
 import android.widget.Button;
 
 
+import java.io.ByteArrayOutputStream;
 import java.util.ArrayList;
 import java.util.HashMap;
 
@@ -51,12 +52,12 @@ public class MainActivity extends ActionBarActivity {
 
         final AlertDialog.Builder fragDlg = new AlertDialog.Builder(this);
 
-        ArrayList<HashMap<String, String>> top4List = dbTools.getAllContacts();
+        ArrayList<Top4Contact> top4List = dbTools.getAllContacts();
 
         for (int i = 0; i < top4List.size(); i++) {
 
             callButton[i] = (Button) findViewById(btnR[i]);
-            callButton[i].setText(top4List.get(i).get("contactName"));
+            callButton[i].setText(top4List.get(i).contactName);
 
             callButton[i].setOnClickListener(new View.OnClickListener() {
                 @Override
@@ -120,7 +121,7 @@ public class MainActivity extends ActionBarActivity {
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
 
-        String number = "";
+        Integer number = null;
         String name = "";
         Bitmap avatar = null;
         Integer avatarId = null;
@@ -148,13 +149,11 @@ public class MainActivity extends ActionBarActivity {
 
                 int numberIdx = cursor.getColumnIndex(Phone.DATA);
 
-
                 if (cursor.moveToFirst()) {
-                    number = cursor.getString(numberIdx);
+                    number = cursor.getInt(numberIdx);
                     name = cursor.getString(cursor.getColumnIndex(ContactsContract.Contacts.DISPLAY_NAME));
                     avatarId = cursor.getInt(cursor.getColumnIndex(ContactsContract.Contacts.PHOTO_ID));
                 }
-
             } catch (Exception e) {
                 e.printStackTrace();
             } finally {
@@ -167,19 +166,14 @@ public class MainActivity extends ActionBarActivity {
         try {
             if(number.equals("")) {
                 name = "Not Assigned";
-                number = "0";
+                number = 0;
             }
             Button callButton = (Button) findViewById(btnR[callButtonId]);
             callButton.setText(name);
             HashMap<String, String> updateMap = new HashMap<>();
             avatar = getAvatar(avatarId);
-            updateMap.put("btnId", Integer.toString(callButtonId));
-            updateMap.put("contactNumber", number);
-            updateMap.put("contactName", name);
-
-            dbTools.updateTop4(updateMap);
-            //updateButtons();
-
+            Top4Contact t4c = new Top4Contact(callButtonId, name, number, avatar);
+            dbTools.updateTop4(t4c);
 
         } catch (Exception e) {
             e.printStackTrace();
@@ -196,7 +190,6 @@ public class MainActivity extends ActionBarActivity {
         Cursor cursor = getContentResolver().query(uri, PHOTO_BITMAP_PROJECTION, null, null, null);
 
         try {
-
             if(cursor.moveToFirst()) {
                 byte[] avatarBytes = cursor.getBlob(0);
                 if(avatarBytes != null) {
