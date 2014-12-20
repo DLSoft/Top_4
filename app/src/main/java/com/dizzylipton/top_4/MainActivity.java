@@ -7,12 +7,17 @@ import android.content.Intent;
 import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.graphics.drawable.BitmapDrawable;
+import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.provider.ContactsContract.CommonDataKinds.Phone;
 import android.provider.ContactsContract;
 import android.support.v7.app.ActionBarActivity;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
 
@@ -20,17 +25,16 @@ import android.widget.Button;
 import java.io.ByteArrayOutputStream;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * Created by Patrick on 12/15/2014.
  */
-
 public class MainActivity extends ActionBarActivity {
 
 
     private final static int PICK_CONTACT = 10;
-    private final static String DEBUG_TAG = "PAT";
-
     Button[] callButton = new Button[4];
     int callButtonId;
 
@@ -40,8 +44,6 @@ public class MainActivity extends ActionBarActivity {
             R.id.callButton3,
             R.id.callButton4,
     };
-
-
 
     DBTools dbTools = new DBTools(this);
 
@@ -57,7 +59,10 @@ public class MainActivity extends ActionBarActivity {
         for (int i = 0; i < top4List.size(); i++) {
 
             callButton[i] = (Button) findViewById(btnR[i]);
-            callButton[i].setText(top4List.get(i).contactName);
+            callButton[i].setText(top4List.get(i).getContactName());
+            Drawable drawable = new BitmapDrawable(getResources(), top4List.get(i).getContactAvatar());
+            drawable.setBounds(0, 0, 60, 60);
+            callButton[i].setCompoundDrawables(drawable, null, null, null);
 
             callButton[i].setOnClickListener(new View.OnClickListener() {
                 @Override
@@ -66,36 +71,32 @@ public class MainActivity extends ActionBarActivity {
                     for (int i = 0; i < 4; i++) {
                         if (v.getId() == btnR[i]) {
                             number = dbTools.getContactNumber(Integer.toString(i));
-                            if(Integer.parseInt(number) == 0) {
-                                fragDlg.setTitle("Invalid Phone Number");
-                                fragDlg.setMessage("Contact has an Invalid Phone Number");
+                            if (number.equals("0")) {
+                                fragDlg.setTitle(getString(R.string.error_invalid_number));
+                                fragDlg.setMessage(getString(R.string.error_invalid_msg));
                                 fragDlg.setCancelable(true);
-                                fragDlg.setNeutralButton("OK", new DialogInterface.OnClickListener() {
-                                            public void onClick(DialogInterface dialog, int id) {
-                                                dialog.cancel();
+                                fragDlg.setNeutralButton(getString(R.string.dialog_ok), new DialogInterface.OnClickListener() {
+                                    public void onClick(DialogInterface dialog, int id) {
+                                        dialog.cancel();
                                     }
                                 });
                                 AlertDialog alertDlg = fragDlg.create();
                                 alertDlg.show();
 
                             } else {
-                                //Intent callIntent = new Intent(Intent.ACTION_CALL);
-                                //callIntent.setData(Uri.parse("tel:" + number));
-                                //startActivity(callIntent);
+                                Intent callIntent = new Intent(Intent.ACTION_CALL);
+                                callIntent.setData(Uri.parse("tel:" + number));
+                                startActivity(callIntent);
                             }
                             break;
-
                         }
                     }
-
-                    Log.e(DEBUG_TAG, number);
                 }
             });
 
             callButton[i].setOnLongClickListener(new View.OnLongClickListener() {
                 @Override
                 public boolean onLongClick(View v) {
-                    Log.d(DEBUG_TAG, "Long CLick");
                     doLaunchContactPicker(v);
                     return false;
                 }
@@ -103,8 +104,40 @@ public class MainActivity extends ActionBarActivity {
         }
     }
 
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        MenuInflater inflater = getMenuInflater();
+        inflater.inflate(R.menu.menu_main, menu);
+
+        return super.onCreateOptionsMenu(menu);
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        switch (item.getItemId()) {
+            case R.id.action_help:
+                final AlertDialog.Builder fragDlg = new AlertDialog.Builder(this);
+                fragDlg.setTitle(getString(R.string.help_button_option));
+                String msg = getString(R.string.help_long_msg) + "\n" + getString(R.string.help_short_msg);
+                fragDlg.setMessage(msg);
+                fragDlg.setCancelable(true);
+                fragDlg.setNeutralButton(getString(R.string.dialog_ok), new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int id) {
+                        dialog.cancel();
+                    }
+                });
+                AlertDialog alertDlg = fragDlg.create();
+                alertDlg.show();
+                return true;
+            case R.id.action_exit:
+                this.finish();
+                return true;
+            default:
+                return super.onOptionsItemSelected(item);
+        }
+    }
+
     public void doLaunchContactPicker(View sender) {
-        Log.d(DEBUG_TAG, "Launch Contact");
 
         for (int i = 0; i < 4; i++) {
             if (btnR[i] == sender.getId()) {
@@ -121,11 +154,10 @@ public class MainActivity extends ActionBarActivity {
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
 
-        Integer number = null;
+        String number = null;
         String name = "";
         Bitmap avatar = null;
         Integer avatarId = null;
-
 
         if (resultCode == RESULT_OK && requestCode == PICK_CONTACT) {
 
@@ -150,7 +182,7 @@ public class MainActivity extends ActionBarActivity {
                 int numberIdx = cursor.getColumnIndex(Phone.DATA);
 
                 if (cursor.moveToFirst()) {
-                    number = cursor.getInt(numberIdx);
+                    number = cursor.getString(numberIdx);
                     name = cursor.getString(cursor.getColumnIndex(ContactsContract.Contacts.DISPLAY_NAME));
                     avatarId = cursor.getInt(cursor.getColumnIndex(ContactsContract.Contacts.PHOTO_ID));
                 }
@@ -164,14 +196,20 @@ public class MainActivity extends ActionBarActivity {
         }
 
         try {
-            if(number.equals("")) {
+            if (number.equals("")) {
                 name = "Not Assigned";
-                number = 0;
+                number = "0";
             }
             Button callButton = (Button) findViewById(btnR[callButtonId]);
             callButton.setText(name);
-            HashMap<String, String> updateMap = new HashMap<>();
             avatar = getAvatar(avatarId);
+
+            if (avatar == null) {
+                avatar = BitmapFactory.decodeResource(getResources(), R.drawable.default_avatar);
+            }
+            Drawable drawable = new BitmapDrawable(getResources(), avatar);
+            drawable.setBounds(0, 0, 60, 60);
+            callButton.setCompoundDrawables(drawable, null, null, null);
             Top4Contact t4c = new Top4Contact(callButtonId, name, number, avatar);
             dbTools.updateTop4(t4c);
 
@@ -179,9 +217,10 @@ public class MainActivity extends ActionBarActivity {
             e.printStackTrace();
         }
     }
+
     private Bitmap getAvatar(int avatarId) {
 
-        String[] PHOTO_BITMAP_PROJECTION = new String[] {
+        String[] PHOTO_BITMAP_PROJECTION = new String[]{
                 ContactsContract.CommonDataKinds.Photo.PHOTO
         };
 
@@ -190,14 +229,13 @@ public class MainActivity extends ActionBarActivity {
         Cursor cursor = getContentResolver().query(uri, PHOTO_BITMAP_PROJECTION, null, null, null);
 
         try {
-            if(cursor.moveToFirst()) {
+            if (cursor.moveToFirst()) {
                 byte[] avatarBytes = cursor.getBlob(0);
-                if(avatarBytes != null) {
+                if (avatarBytes != null) {
                     avatar = BitmapFactory.decodeByteArray(avatarBytes, 0, avatarBytes.length);
                 }
             }
-        }
-        finally {
+        } finally {
             cursor.close();
         }
         return avatar;

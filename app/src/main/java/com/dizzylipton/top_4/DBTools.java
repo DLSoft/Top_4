@@ -2,10 +2,14 @@ package com.dizzylipton.top_4;
 
 import android.content.ContentValues;
 import android.content.Context;
+import android.content.res.Resources;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 
+import java.io.ByteArrayOutputStream;
 import java.util.ArrayList;
 import java.util.HashMap;
 
@@ -14,23 +18,32 @@ import java.util.HashMap;
  */
 public class DBTools extends SQLiteOpenHelper {
 
+    Context mContext = null;
+
     public DBTools(Context appContext) {
-        super(appContext, "top4_book.db", null, 1);
+
+    super(appContext, "top4_book.db", null, 1);
+        mContext = appContext;
     }
 
     public void onCreate(SQLiteDatabase database) {
 
-        String query = "CREATE TABLE top4 (btnId TEXT, contactName TEXT, contactNumber TEXT)";
+        String query = "CREATE TABLE top4 (btnId INTEGER, " +
+                "contactName TEXT, " +
+                "contactNumber TEST, " +
+                "contactAvatar BLOB)";
+
         database.execSQL(query);
 
         for (int i = 0; i < 4; i++) {
-            HashMap<String, String> initMap = new HashMap<>();
-            initMap.put("btnId", Integer.toString(i));
-            initMap.put("contactName", "Not Yet Assigned");
-            initMap.put("contactNumber", "0");
-            insertInitTop4(initMap, database);
+            Top4Contact t4c = new Top4Contact();
+            t4c.setContactId(i);
+            t4c.setContactName("Not Yet Assigned");
+            t4c.setContactNumber("0");
+            Resources res = mContext.getResources();
+            t4c.setContactAvatar( BitmapFactory.decodeResource(res, R.drawable.default_avatar ));
+            insertInitTop4(t4c, database);
         }
-
     }
 
     public void onUpgrade(SQLiteDatabase database, int version_old, int version_new) {
@@ -39,41 +52,38 @@ public class DBTools extends SQLiteOpenHelper {
         onCreate(database);
     }
 
-    public ArrayList<HashMap<String, String>> getAllContacts() {
-
+    public ArrayList<Top4Contact> getAllContacts() {
 
         SQLiteDatabase database = this.getWritableDatabase();
-        //String delQuery = "DROP TABLE IF EXISTS top4";
-        //database.execSQL(delQuery);
-        //onCreate(database);
-        //database = this.getWritableDatabase();
-
-        ArrayList<HashMap<String, String>> top4ArrayList;
+        ArrayList<Top4Contact> top4ArrayList;
         top4ArrayList = new ArrayList<>();
         String selectQuery = "SELECT * FROM top4";
-
 
         Cursor cursor = database.rawQuery(selectQuery, null);
         if(cursor.moveToFirst()) {
             do {
-                HashMap<String, String> top4Map = new HashMap<>();
-                top4Map.put("btnId", cursor.getString(0));
-                top4Map.put("contactName", cursor.getString(1));
-                top4Map.put("contactNumber", cursor.getString(2));
+                Top4Contact t4c = new Top4Contact();
+                t4c.setContactId(cursor.getInt(0));
+                t4c.setContactName(cursor.getString(1));
+                t4c.setContactNumber(cursor.getString(2));
+                t4c.setContactAvatar( BitmapFactory.decodeByteArray(cursor.getBlob(3), 0, cursor.getBlob(3).length));
 
-                top4ArrayList.add(top4Map);
+                top4ArrayList.add(t4c);
             } while(cursor.moveToNext());
         }
         return top4ArrayList;
     }
-    public void insertInitTop4(HashMap<String, String> queryValues, SQLiteDatabase database) {
+
+    public void insertInitTop4(Top4Contact t4c, SQLiteDatabase database) {
 
         // This method should only be called once to initialize the database
 
         ContentValues values = new ContentValues();
-        values.put("btnId", queryValues.get("btnId"));
-        values.put("contactName", queryValues.get("contactName"));
-        values.put("contactNumber", queryValues.get("contactNumber"));
+        values.put("btnId", t4c.getContactId());
+        values.put("contactName", t4c.getContactName());
+        values.put("contactNumber", t4c.getContactNumber());
+        byte[] avatar = bitmap2byte(t4c.getContactAvatar());
+        values.put("contactAvatar", avatar);
 
         database.insert("top4", null, values);
     }
@@ -84,15 +94,17 @@ public class DBTools extends SQLiteOpenHelper {
         onCreate(database);
     }
 
-    public int updateTop4(HashMap<String, String> queryValues) {
+    public int updateTop4(Top4Contact t4c) {
 
         SQLiteDatabase database = this.getWritableDatabase();
 
         ContentValues values = new ContentValues();
-        values.put("contactName", queryValues.get("contactName"));
-        values.put("contactNumber", queryValues.get("contactNumber"));
+        values.put("contactName", t4c.getContactName());
+        values.put("contactNumber", t4c.getContactNumber());
+        byte[] avatar = bitmap2byte(t4c.getContactAvatar());
+        values.put("contactAvatar", avatar);
 
-        return database.update("top4", values, "btnId" + " = ?", new String[]{ queryValues.get("btnId")});
+        return database.update("top4", values, "btnId" + " = ?", new String[]{ Integer.toString(t4c.getContactId()) });
     }
 
     public void deleteTop4(String id) {
@@ -113,8 +125,14 @@ public class DBTools extends SQLiteOpenHelper {
                 contactNumber = cursor.getString(0);
             } while (cursor.moveToNext());
         }
-
         return contactNumber;
+    }
+
+    private byte[] bitmap2byte(Bitmap b) {
+        ByteArrayOutputStream byteMapOutStream = new ByteArrayOutputStream();
+        b.compress(Bitmap.CompressFormat.PNG, 100, byteMapOutStream);
+        byte[] byteArray = byteMapOutStream.toByteArray();
+        return byteArray;
     }
 }
 

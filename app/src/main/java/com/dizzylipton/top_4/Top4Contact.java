@@ -7,21 +7,19 @@ import android.graphics.Bitmap;
  */
 public class Top4Contact {
 
-    public Top4Contact() {
+    public Top4Contact() { }
 
-    }
-
-    public Top4Contact(Integer contactId, String contactName, Integer contactNum, Bitmap contactAvatar) {
+    public Top4Contact(Integer contactId, String contactName, String contactNum, Bitmap contactAvatar) {
         this.contactId = contactId;
         this.contactName = contactName;
         this.contactNumber = contactNum;
         this.contactAvatar = contactAvatar;
     }
 
-    Integer contactId;
-    String contactName;
-    Integer contactNumber;
-    Bitmap contactAvatar;
+    private Integer contactId;
+    private String contactName;
+    private String contactNumber;
+    private Bitmap contactAvatar;
 
     public Integer getContactId() {
         return contactId;
@@ -39,11 +37,11 @@ public class Top4Contact {
         this.contactName = contactName;
     }
 
-    public Integer getContactNumber() {
+    public String getContactNumber() {
         return contactNumber;
     }
 
-    public void setContactNumber(Integer contactNumber) {
+    public void setContactNumber(String contactNumber) {
         this.contactNumber = contactNumber;
     }
 

@@ -2,7 +2,6 @@
 <resources>
 
     <string name="app_name">Top 4</string>
-    <string name="hello_world">Hello world!</string>
     <string name="action_settings">Settings</string>
     <string name="call_button1">Not Assigned</string>
     <string name="call_button2">Not Assigned</string>
@@ -10,5 +9,14 @@
     <string name="call_button4">Not Assigned</string>
 
     <string name="dialog_ok">OK</string>
+    <string name="action_exit">Exit></string>
+    <string name="action_help">Help</string>
+    <string name="help_button_option">Button Options</string>
+    <string name="help_long_msg">Long Hold changes contact.</string>
+    <string name="help_short_msg">Short Hold places call.</string>
+
+    <string name="error_invalid_number">Invalid Phone Number</string>
+    <string name="error_invalid_msg">Contact has an Invalid Phone Number</string>
+
 
 </resources>
